@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Glass TV Launcher</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="all_apps_title">All Apps</string>
+    <string name="shortcuts_title">Quick Access</string>
+    <string name="settings_title">Launcher Settings</string>
+    <string name="no_apps_found">No TV applications found.</string>
+    <string name="app_open_error">Unable to launch this application.</string>
+</resources>
