@@ -1,4 +1,4 @@
-# Glass TV Launcher
+# TV Launcher
 
 A minimalist, high-performance home launcher for Android TV and Google TV devices. Designed with an Apple TV–inspired aesthetic of translucent glassmorphism, calm typography, instant D-pad navigation, and zero advertisements or sponsored clutter.
 
@@ -66,11 +66,11 @@ adb shell am start -n com.glasstv.launcher/.MainActivity
 ## Setting as Default Home Launcher
 
 1. **Via In-App Settings:**
-   - Open Glass TV Launcher Settings -> **Launcher Setup** -> select **Set as Default Launcher**.
-   - This opens Android's system `HomeSettingsActivity` where you can pick Glass TV Launcher.
+   - Open TV Launcher Settings -> **Launcher Setup** -> select **Set as Default Launcher**.
+   - This opens Android's system `HomeSettingsActivity` where you can pick TV Launcher.
 2. **Via Android TV System Settings:**
    - Navigate to `Settings` -> `Apps` -> `Special app access` -> `Default apps` -> `Home app`.
-   - Select **Glass TV Launcher**.
+   - Select **TV Launcher**.
 3. **Via ADB (Optional / Advanced Testing):**
    ```bash
    adb shell cmd package set-home-activity com.glasstv.launcher/.MainActivity

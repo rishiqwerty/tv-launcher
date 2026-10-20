@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -32,8 +33,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,19 +49,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 import com.glasstv.launcher.data.model.AppInfo
+import com.glasstv.launcher.ui.theme.AccentCyan
 import com.glasstv.launcher.ui.theme.Dimens
-import com.glasstv.launcher.ui.theme.GlassBorderDefault
-import com.glasstv.launcher.ui.theme.GlassBorderFocused
-import com.glasstv.launcher.ui.theme.GlassCardBase
-import com.glasstv.launcher.ui.theme.GlassCardFocused
-import com.glasstv.launcher.ui.theme.TextMuted
+import com.glasstv.launcher.ui.theme.GlassBorderFocusedGradient
+import com.glasstv.launcher.ui.theme.GlassBorderGradient
+import com.glasstv.launcher.ui.theme.GlassSpecularSheen
+import com.glasstv.launcher.ui.theme.GlassSurfaceCard
+import com.glasstv.launcher.ui.theme.GlassSurfaceFocused
 import com.glasstv.launcher.ui.theme.TextPrimary
+import com.glasstv.launcher.ui.theme.TextSecondary
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun AppTile(
     app: AppInfo,
     onClick: (AppInfo) -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: ((AppInfo) -> Unit)? = null,
     isReducedMotion: Boolean = false
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -80,32 +91,42 @@ fun AppTile(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .padding(horizontal = 8.dp, vertical = 10.dp)
             .scale(scale)
     ) {
         Box(
             modifier = Modifier
                 .size(width = tileWidth, height = tileHeight)
                 .shadow(
-                    elevation = if (isFocused) 16.dp else 4.dp,
+                    elevation = if (isFocused) 22.dp else 4.dp,
                     shape = shape,
-                    spotColor = if (isFocused) Color.White else Color.Black
+                    spotColor = if (isFocused) AccentCyan.copy(alpha = 0.85f) else Color(0x60000000)
                 )
                 .clip(shape)
-                .background(if (isFocused) GlassCardFocused else GlassCardBase)
+                .background(Color(0x350A0E18))
+                .background(if (isFocused) GlassSurfaceFocused else GlassSurfaceCard)
                 .border(
                     border = BorderStroke(
-                        width = if (isFocused) Dimens.FocusBorderWidth else Dimens.DefaultBorderWidth,
-                        color = if (isFocused) GlassBorderFocused else GlassBorderDefault
+                        width = if (isFocused) 2.5.dp else 1.dp,
+                        brush = if (isFocused) GlassBorderFocusedGradient else GlassBorderGradient
                     ),
                     shape = shape
                 )
                 .onFocusChanged { isFocused = it.isFocused }
                 .focusable(interactionSource = interactionSource)
-                .clickable(
+                .onKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Menu) {
+                        onLongClick?.invoke(app)
+                        true
+                    } else {
+                        false
+                    }
+                }
+                .combinedClickable(
                     interactionSource = interactionSource,
                     indication = null,
-                    onClick = { onClick(app) }
+                    onClick = { onClick(app) },
+                    onLongClick = onLongClick?.let { callback -> { callback(app) } }
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -120,16 +141,32 @@ fun AppTile(
                     )
                 }
             } else if (app.icon != null) {
-                val bitmap = remember(app.icon) { drawableToBitmap(app.icon) }
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = app.label,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Fit
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = if (isFocused) {
+                                    listOf(Color(0x55FFFFFF), Color(0x25334155), Color(0x600F172A))
+                                } else {
+                                    listOf(Color(0x28FFFFFF), Color(0x181E293B), Color(0x800F172A))
+                                }
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val bitmap = remember(app.icon) { drawableToBitmap(app.icon) }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = app.label,
+                            modifier = Modifier
+                                .size(58.dp)
+                                .shadow(10.dp, RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(14.dp)),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             } else {
                 // High-contrast initial avatar fallback
@@ -140,6 +177,15 @@ fun AppTile(
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            // Apple TV Specular Glass Top-Down Sheen Overlay on Focus
+            if (isFocused) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(GlassSpecularSheen)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -147,9 +193,9 @@ fun AppTile(
         // App Label below tile
         Text(
             text = app.label,
-            color = if (isFocused) TextPrimary else TextMuted,
+            color = if (isFocused) TextPrimary else TextSecondary,
             fontSize = 13.sp,
-            fontWeight = if (isFocused) FontWeight.SemiBold else FontWeight.Normal,
+            fontWeight = if (isFocused) FontWeight.Bold else FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,

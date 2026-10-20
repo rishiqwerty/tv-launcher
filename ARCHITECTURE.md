@@ -1,6 +1,6 @@
-# Architecture Documentation — Glass TV Launcher
+# Architecture Documentation — TV Launcher
 
-**Working Title:** Glass TV Launcher  
+**Title:** TV Launcher  
 **Platform:** Android TV / Google TV (API 28+ / Android 9.0+, Target SDK 34 / 35)  
 **Primary Goal:** Lightweight, remote-first TV home launcher with Apple TV–inspired clarity, translucent glassmorphic surfaces, fast app access, and zero ad clutter.
 
@@ -8,7 +8,7 @@
 
 ## 1. High-Level Architecture Overview
 
-Glass TV Launcher follows modern Android Clean Architecture and Unidirectional Data Flow (UDF) patterns, keeping boundaries lightweight, modular, and testable without heavy dependency injection overhead.
+TV Launcher follows modern Android Clean Architecture and Unidirectional Data Flow (UDF) patterns, keeping boundaries lightweight, modular, and testable without heavy dependency injection overhead.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐

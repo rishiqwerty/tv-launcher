@@ -35,6 +35,8 @@ class HomeViewModel(
     private val settingsRepository = SettingsRepository(application)
 
     private val _errorMessage = MutableStateFlow<String?>(null)
+    val currentScreen = MutableStateFlow(com.glasstv.launcher.ui.components.LauncherScreen.HOME)
+    val selectedAppForAction = MutableStateFlow<AppInfo?>(null)
 
     val uiState: StateFlow<HomeUiState> = combine(
         appRepository.installedApps,
@@ -70,9 +72,73 @@ class HomeViewModel(
         refresh()
     }
 
+    fun setScreen(screen: com.glasstv.launcher.ui.components.LauncherScreen) {
+        currentScreen.value = screen
+    }
+
+    fun handleBack(): Boolean {
+        if (selectedAppForAction.value != null) {
+            selectedAppForAction.value = null
+            return true
+        }
+        if (currentScreen.value != com.glasstv.launcher.ui.components.LauncherScreen.HOME) {
+            currentScreen.value = com.glasstv.launcher.ui.components.LauncherScreen.HOME
+            return true
+        }
+        return false
+    }
+
+    fun selectAppForAction(app: AppInfo?) {
+        selectedAppForAction.value = app
+    }
+
     fun refresh() {
         viewModelScope.launch {
             appRepository.refreshApps()
+        }
+    }
+
+    fun updateSettings(transform: (LauncherSettings) -> LauncherSettings) {
+        viewModelScope.launch {
+            settingsRepository.updateSettings(transform)
+        }
+    }
+
+    fun toggleFavorite(app: AppInfo) {
+        viewModelScope.launch {
+            val currentFavorites = uiState.value.favoriteApps.map { it.packageName }.toMutableList()
+            if (currentFavorites.contains(app.packageName)) {
+                currentFavorites.remove(app.packageName)
+            } else {
+                currentFavorites.add(app.packageName)
+            }
+            settingsRepository.saveFavorites(currentFavorites)
+        }
+    }
+
+    fun moveFavoriteLeft(app: AppInfo) {
+        viewModelScope.launch {
+            val list = uiState.value.favoriteApps.map { it.packageName }.toMutableList()
+            val index = list.indexOf(app.packageName)
+            if (index > 0) {
+                val temp = list[index]
+                list[index] = list[index - 1]
+                list[index - 1] = temp
+                settingsRepository.saveFavorites(list)
+            }
+        }
+    }
+
+    fun moveFavoriteRight(app: AppInfo) {
+        viewModelScope.launch {
+            val list = uiState.value.favoriteApps.map { it.packageName }.toMutableList()
+            val index = list.indexOf(app.packageName)
+            if (index in 0 until list.size - 1) {
+                val temp = list[index]
+                list[index] = list[index + 1]
+                list[index + 1] = temp
+                settingsRepository.saveFavorites(list)
+            }
         }
     }
 

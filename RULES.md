@@ -1,6 +1,6 @@
-# Coding Rules and Engineering Standards — Glass TV Launcher
+# Coding Rules and Engineering Standards — TV Launcher
 
-These rules must be followed across all development phases of the Glass TV Launcher project.
+These rules must be followed across all development phases of the TV Launcher project.
 
 ---
 

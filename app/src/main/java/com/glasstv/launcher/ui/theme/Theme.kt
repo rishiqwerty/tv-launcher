@@ -9,7 +9,7 @@ import com.glasstv.launcher.data.model.ThemeMode
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun GlassTVTheme(
+fun TVLauncherTheme(
     settings: LauncherSettings = LauncherSettings(),
     content: @Composable () -> Unit
 ) {
@@ -21,12 +21,12 @@ fun GlassTVTheme(
         )
         ThemeMode.SUBTLE_GRADIENT -> darkColorScheme(
             background = BackgroundGradientStart,
-            surface = GlassCardBase,
+            surface = GlassSurfaceCard,
             primary = AccentBlue
         )
         ThemeMode.DARK -> darkColorScheme(
             background = BackgroundDark,
-            surface = GlassCardBase,
+            surface = GlassSurfaceCard,
             primary = AccentCyan
         )
     }

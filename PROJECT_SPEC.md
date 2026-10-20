@@ -1,5 +1,5 @@
 Project Specification --- Minimalist Google TV Launcher
-Working title: Glass TV Launcher
+Title: TV Launcher
 Platform: Android TV / Google TV devices
 Primary goal: Build a clean, lightweight, remote-first home launcher
 with an Apple TV--inspired sense of polish, translucent glassmorphic

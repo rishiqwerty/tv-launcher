@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Glass TV Launcher</string>
+    <string name="app_name">TV Launcher</string>
     <string name="favorites_title">Favorites</string>
     <string name="all_apps_title">All Apps</string>
     <string name="shortcuts_title">Quick Access</string>
