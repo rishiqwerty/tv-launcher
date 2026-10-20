@@ -10,11 +10,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import com.glasstv.launcher.data.receiver.PackageChangeReceiver
 import com.glasstv.launcher.ui.components.AppActionDialog
+import com.glasstv.launcher.ui.components.GlassBackdrop
 import com.glasstv.launcher.ui.components.LauncherScreen
 import com.glasstv.launcher.ui.screens.AllAppsScreen
 import com.glasstv.launcher.ui.screens.HomeScreen
@@ -57,59 +66,82 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
 
             TVLauncherTheme(settings = uiState.settings) {
-                when (currentScreen) {
-                    LauncherScreen.HOME -> {
-                        HomeScreen(
-                            uiState = uiState,
-                            onAppClick = { app ->
-                                val success = viewModel.launchApp(app)
-                                if (!success) {
-                                    Toast.makeText(context, "Unable to launch ${app.label}", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onAppLongClick = { app ->
-                                viewModel.selectAppForAction(app)
-                            },
-                            onShortcutClick = { shortcut ->
-                                val success = viewModel.launchShortcut(context, shortcut)
-                                if (!success) {
-                                    Toast.makeText(context, "Shortcut ${shortcut.title} not available", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onScreenSelected = { screen ->
-                                viewModel.setScreen(screen)
+                GlassBackdrop(settings = uiState.settings) {
+                    AnimatedContent(
+                        targetState = currentScreen,
+                        transitionSpec = {
+                            val direction = if (targetState.ordinal >= initialState.ordinal) 1 else -1
+                            (slideInHorizontally(
+                                animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
+                                initialOffsetX = { fullWidth -> (fullWidth * 0.12f * direction).toInt() }
+                            ) + fadeIn(
+                                animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing)
+                            )).togetherWith(
+                                slideOutHorizontally(
+                                    animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+                                    targetOffsetX = { fullWidth -> (-fullWidth * 0.12f * direction).toInt() }
+                                ) + fadeOut(
+                                    animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing)
+                                )
+                            )
+                        },
+                        label = "screen_transition"
+                    ) { targetScreen ->
+                        when (targetScreen) {
+                            LauncherScreen.HOME -> {
+                                HomeScreen(
+                                    uiState = uiState,
+                                    onAppClick = { app ->
+                                        val success = viewModel.launchApp(app)
+                                        if (!success) {
+                                            Toast.makeText(context, "Unable to launch ${app.label}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onAppLongClick = { app ->
+                                        viewModel.selectAppForAction(app)
+                                    },
+                                    onShortcutClick = { shortcut ->
+                                        val success = viewModel.launchShortcut(context, shortcut)
+                                        if (!success) {
+                                            Toast.makeText(context, "Shortcut ${shortcut.title} not available", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onScreenSelected = { screen ->
+                                        viewModel.setScreen(screen)
+                                    }
+                                )
                             }
-                        )
-                    }
 
-                    LauncherScreen.ALL_APPS -> {
-                        AllAppsScreen(
-                            uiState = uiState,
-                            onAppClick = { app ->
-                                val success = viewModel.launchApp(app)
-                                if (!success) {
-                                    Toast.makeText(context, "Unable to launch ${app.label}", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onAppLongClick = { app ->
-                                viewModel.selectAppForAction(app)
-                            },
-                            onScreenSelected = { screen ->
-                                viewModel.setScreen(screen)
+                            LauncherScreen.ALL_APPS -> {
+                                AllAppsScreen(
+                                    uiState = uiState,
+                                    onAppClick = { app ->
+                                        val success = viewModel.launchApp(app)
+                                        if (!success) {
+                                            Toast.makeText(context, "Unable to launch ${app.label}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onAppLongClick = { app ->
+                                        viewModel.selectAppForAction(app)
+                                    },
+                                    onScreenSelected = { screen ->
+                                        viewModel.setScreen(screen)
+                                    }
+                                )
                             }
-                        )
-                    }
 
-                    LauncherScreen.SETTINGS -> {
-                        SettingsScreen(
-                            uiState = uiState,
-                            onUpdateSettings = { transform ->
-                                viewModel.updateSettings(transform)
-                            },
-                            onScreenSelected = { screen ->
-                                viewModel.setScreen(screen)
+                            LauncherScreen.SETTINGS -> {
+                                SettingsScreen(
+                                    uiState = uiState,
+                                    onUpdateSettings = { transform ->
+                                        viewModel.updateSettings(transform)
+                                    },
+                                    onScreenSelected = { screen ->
+                                        viewModel.setScreen(screen)
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 }
 

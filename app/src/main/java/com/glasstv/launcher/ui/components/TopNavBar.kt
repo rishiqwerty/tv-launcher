@@ -1,7 +1,9 @@
 package com.glasstv.launcher.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,7 +39,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,22 +85,26 @@ fun TopNavBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Floating Frosted Glass Segmented Control Island
-        val capsuleShape = RoundedCornerShape(28.dp)
+        val capsuleShape = RoundedCornerShape(26.dp)
+        val segmentWidth = 118.dp
+        val segmentHeight = 38.dp
+        val segmentSpacing = 4.dp
+
         Box(
             modifier = Modifier
                 .shadow(
                     elevation = 16.dp,
                     shape = capsuleShape,
-                    spotColor = Color(0x80000000)
+                    spotColor = Color(0x60000000)
                 )
                 .clip(capsuleShape)
-                .background(Color(0x400F172A))
+                .background(Color(0x350F172A))
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0x38FFFFFF),
-                            Color(0x14FFFFFF),
-                            Color(0x06000000)
+                            Color(0x28FFFFFF),
+                            Color(0x0CFFFFFF),
+                            Color(0x04000000)
                         )
                     )
                 )
@@ -101,14 +114,67 @@ fun TopNavBar(
                 )
                 .padding(4.dp)
         ) {
+            // Gliding Translucent Active Indicator Pill
+            val targetOffsetX = when (currentScreen) {
+                LauncherScreen.HOME -> 0.dp
+                LauncherScreen.ALL_APPS -> segmentWidth + segmentSpacing
+                LauncherScreen.SETTINGS -> (segmentWidth + segmentSpacing) * 2
+            }
+
+            val animatedOffsetX by animateDpAsState(
+                targetValue = targetOffsetX,
+                animationSpec = tween(
+                    durationMillis = 240,
+                    easing = FastOutSlowInEasing
+                ),
+                label = "gliding_tab_indicator"
+            )
+
+            val indicatorShape = RoundedCornerShape(20.dp)
+
+            Box(
+                modifier = Modifier
+                    .offset(x = animatedOffsetX)
+                    .size(width = segmentWidth, height = segmentHeight)
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = indicatorShape,
+                        spotColor = AccentCyan.copy(alpha = 0.35f)
+                    )
+                    .clip(indicatorShape)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0x3238BDF8),
+                                Color(0x140284C7)
+                            )
+                        )
+                    )
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color(0x90FFFFFF),
+                                    Color(0x3538BDF8)
+                                )
+                            )
+                        ),
+                        indicatorShape
+                    )
+            )
+
+            // Interactive Navigation Segments Row
             Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(segmentSpacing),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 LauncherScreen.values().forEach { screen ->
                     GlassNavSegment(
                         screen = screen,
                         isSelected = currentScreen == screen,
+                        width = segmentWidth,
+                        height = segmentHeight,
                         onClick = { onScreenSelected(screen) }
                     )
                 }
@@ -133,33 +199,31 @@ fun TopNavBar(
 private fun GlassNavSegment(
     screen: LauncherScreen,
     isSelected: Boolean,
+    width: androidx.compose.ui.unit.Dp,
+    height: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.06f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        targetValue = if (isFocused) 1.05f else 1.0f,
+        animationSpec = tween(
+            durationMillis = 110,
+            easing = FastOutSlowInEasing
+        ),
         label = "nav_segment_scale"
     )
 
-    val segmentShape = RoundedCornerShape(22.dp)
+    val segmentShape = RoundedCornerShape(20.dp)
 
+    // Lighter, translucent focus highlight
     val backgroundModifier = when {
         isFocused -> Modifier.background(
             Brush.verticalGradient(
                 colors = listOf(
-                    Color(0x75FFFFFF),
-                    Color(0x35FFFFFF)
-                )
-            )
-        )
-        isSelected -> Modifier.background(
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0x5538BDF8),
-                    Color(0x220284C7)
+                    Color(0x30FFFFFF),
+                    Color(0x14FFFFFF)
                 )
             )
         )
@@ -168,16 +232,13 @@ private fun GlassNavSegment(
 
     val borderModifier = when {
         isFocused -> Modifier.border(
-            BorderStroke(2.dp, GlassBorderFocusedGradient),
-            segmentShape
-        )
-        isSelected -> Modifier.border(
             BorderStroke(
-                1.dp,
-                Brush.verticalGradient(
+                1.5.dp,
+                Brush.linearGradient(
                     listOf(
-                        Color(0xB3FFFFFF),
-                        Color(0x6038BDF8)
+                        Color(0xDDFFFFFF),
+                        Color(0x8038BDF8),
+                        Color(0xAAFFFFFF)
                     )
                 )
             ),
@@ -188,28 +249,42 @@ private fun GlassNavSegment(
 
     Box(
         modifier = Modifier
-            .scale(scale)
-            .shadow(
-                elevation = if (isFocused) 12.dp else if (isSelected) 6.dp else 0.dp,
-                shape = segmentShape,
-                spotColor = if (isFocused) Color.White else AccentCyan
+            .size(width = width, height = height)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .then(
+                if (isFocused) {
+                    Modifier.shadow(
+                        elevation = 8.dp,
+                        shape = segmentShape,
+                        spotColor = Color(0x60FFFFFF)
+                    )
+                } else Modifier
             )
             .clip(segmentShape)
             .then(backgroundModifier)
             .then(borderModifier)
             .onFocusChanged { isFocused = it.isFocused }
-            .focusable(interactionSource = interactionSource)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 18.dp, vertical = 9.dp),
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyDown && (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter)) {
+                    onClick()
+                    true
+                } else {
+                    false
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = screen.icon,
@@ -221,6 +296,8 @@ private fun GlassNavSegment(
                 },
                 modifier = Modifier.size(17.dp)
             )
+
+            Spacer(modifier = Modifier.width(6.dp))
 
             Text(
                 text = screen.title,

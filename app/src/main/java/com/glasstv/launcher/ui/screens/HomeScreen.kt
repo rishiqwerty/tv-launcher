@@ -43,6 +43,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -97,9 +98,8 @@ fun HomeScreen(
         }
     }
 
-    GlassBackdrop(
-        settings = uiState.settings,
-        modifier = modifier
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -186,14 +186,20 @@ fun HomeScreen(
                         val btnInteraction = remember { MutableInteractionSource() }
                         val btnScale by animateFloatAsState(
                             targetValue = if (isBtnFocused) 1.05f else 1.0f,
-                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+                            animationSpec = androidx.compose.animation.core.tween(
+                                durationMillis = 110,
+                                easing = androidx.compose.animation.core.FastOutSlowInEasing
+                            ),
                             label = "empty_btn_scale"
                         )
 
                         val btnShape = RoundedCornerShape(14.dp)
                         Box(
                             modifier = Modifier
-                                .scale(btnScale)
+                                .graphicsLayer {
+                                    scaleX = btnScale
+                                    scaleY = btnScale
+                                }
                                 .focusRequester(firstFocusRequester)
                                 .shadow(if (isBtnFocused) 12.dp else 0.dp, btnShape, spotColor = AccentCyan)
                                 .clip(btnShape)

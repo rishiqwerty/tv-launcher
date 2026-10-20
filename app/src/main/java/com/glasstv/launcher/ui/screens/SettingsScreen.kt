@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -84,9 +85,8 @@ fun SettingsScreen(
     val context = LocalContext.current
     val settings = uiState.settings
 
-    GlassBackdrop(
-        settings = settings,
-        modifier = modifier
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -277,7 +277,10 @@ private fun SettingsRow(
 
     val scale by animateFloatAsState(
         targetValue = if (isFocused) 1.025f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        animationSpec = androidx.compose.animation.core.tween(
+            durationMillis = 110,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
         label = "settings_row_scale"
     )
 
@@ -287,7 +290,10 @@ private fun SettingsRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
-            .scale(scale)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .shadow(
                 elevation = if (isFocused) 16.dp else 4.dp,
                 shape = shape,

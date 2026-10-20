@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,7 +75,10 @@ fun ShortcutTile(
 
     val scale by animateFloatAsState(
         targetValue = targetScale,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        animationSpec = androidx.compose.animation.core.tween(
+            durationMillis = 110,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
         label = "shortcut_scale"
     )
 
@@ -84,29 +88,32 @@ fun ShortcutTile(
     Box(
         modifier = modifier
             .padding(horizontal = 6.dp, vertical = 6.dp)
-            .scale(scale)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .size(width = 186.dp, height = 76.dp)
             .shadow(
-                elevation = if (isFocused) 18.dp else 4.dp,
+                elevation = if (isFocused) 12.dp else 4.dp,
                 shape = shape,
-                spotColor = if (isFocused) config.accentColor else Color(0x60000000)
+                spotColor = if (isFocused) config.accentColor.copy(alpha = 0.55f) else Color(0x50000000)
             )
             .clip(shape)
             // Translucent glass foundation
-            .background(if (isFocused) Color(0x451E293B) else Color(0x350F172A))
+            .background(if (isFocused) Color(0x351E293B) else Color(0x280F172A))
             // Frosted glass refraction fill
             .background(
                 Brush.verticalGradient(
                     colors = if (isFocused) {
                         listOf(
-                            Color(0x6EFFFFFF),
                             Color(0x32FFFFFF),
-                            Color(0x10000000)
+                            Color(0x14FFFFFF),
+                            Color(0x06000000)
                         )
                     } else {
                         listOf(
-                            Color(0x32FFFFFF),
-                            Color(0x12FFFFFF),
+                            Color(0x28FFFFFF),
+                            Color(0x10FFFFFF),
                             Color(0x04000000)
                         )
                     }
@@ -115,7 +122,7 @@ fun ShortcutTile(
             // Specular gradient border
             .border(
                 border = BorderStroke(
-                    width = if (isFocused) 2.dp else 1.dp,
+                    width = if (isFocused) 1.5.dp else 1.dp,
                     brush = if (isFocused) GlassBorderFocusedGradient else GlassBorderGradient
                 ),
                 shape = shape

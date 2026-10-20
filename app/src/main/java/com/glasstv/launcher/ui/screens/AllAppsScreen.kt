@@ -45,6 +45,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -126,9 +127,8 @@ fun AllAppsScreen(
         }
     }
 
-    GlassBackdrop(
-        settings = uiState.settings,
-        modifier = modifier
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -232,14 +232,14 @@ fun AllAppsScreen(
             } else {
                 // Expanded Apps Grid with Pure Optical Dissolve Fading Edge
                 TvLazyVerticalGrid(
-                    columns = TvGridCells.Adaptive(minSize = 164.dp),
-                    contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    columns = TvGridCells.Fixed(6),
+                    contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 6.dp, bottom = 48.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .fadingEdge(top = 28.dp, bottom = 48.dp, left = 48.dp, right = 48.dp)
+                        .fadingEdge(top = 24.dp, bottom = 48.dp, left = 48.dp, right = 48.dp)
                 ) {
                     items(
                         count = filteredApps.size,
@@ -251,6 +251,7 @@ fun AllAppsScreen(
                             onClick = onAppClick,
                             onLongClick = onAppLongClick,
                             isReducedMotion = uiState.settings.reducedMotion,
+                            isCompact = true,
                             modifier = if (index == 0 && !isSearchExpanded) Modifier.focusRequester(firstFocusRequester) else Modifier
                         )
                     }
@@ -269,8 +270,11 @@ private fun TopSearchActionButton(
     val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.08f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        targetValue = if (isFocused) 1.06f else 1.0f,
+        animationSpec = androidx.compose.animation.core.tween(
+            durationMillis = 110,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
         label = "search_btn_scale"
     )
 
@@ -278,25 +282,28 @@ private fun TopSearchActionButton(
 
     Box(
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .shadow(
-                elevation = if (isFocused) 14.dp else 4.dp,
+                elevation = if (isFocused) 10.dp else 4.dp,
                 shape = shape,
-                spotColor = if (isFocused) AccentCyan else Color(0x60000000)
+                spotColor = if (isFocused) AccentCyan.copy(alpha = 0.5f) else Color(0x50000000)
             )
             .clip(shape)
-            .background(Color(0x400F172A))
+            .background(Color(0x350F172A))
             .background(
                 Brush.verticalGradient(
                     colors = if (isFocused) {
                         listOf(
-                            Color(0x75FFFFFF),
-                            Color(0x35FFFFFF)
+                            Color(0x30FFFFFF),
+                            Color(0x14FFFFFF)
                         )
                     } else {
                         listOf(
-                            Color(0x35FFFFFF),
-                            Color(0x12FFFFFF),
+                            Color(0x28FFFFFF),
+                            Color(0x0EFFFFFF),
                             Color(0x04000000)
                         )
                     }
@@ -304,7 +311,7 @@ private fun TopSearchActionButton(
             )
             .border(
                 border = BorderStroke(
-                    width = if (isFocused) 2.dp else 1.dp,
+                    width = if (isFocused) 1.5.dp else 1.dp,
                     brush = if (isFocused) GlassBorderFocusedGradient else GlassBorderGradient
                 ),
                 shape = shape

@@ -15,7 +15,7 @@ val BackgroundGradientEnd = Color(0xFF04060A)
 val GlassSurface = Color(0x30FFFFFF)
 val GlassSurfaceSubtle = Color(0x18FFFFFF)
 val GlassSurfaceLight = Color(0x42FFFFFF)
-val GlassSurfaceFocused = Color(0x55FFFFFF)
+val GlassSurfaceFocused = Color(0x28FFFFFF)
 val GlassSurfaceDark = Color(0x900B1120)
 val GlassSurfaceCard = Color(0x351E293B)
 
@@ -36,9 +36,9 @@ val GlassCardFillGradient = Brush.verticalGradient(
 
 val GlassCardFocusedGradient = Brush.verticalGradient(
     colors = listOf(
-        Color(0x6AFFFFFF),
-        Color(0x32FFFFFF),
-        Color(0x12000000)
+        Color(0x38FFFFFF),
+        Color(0x18FFFFFF),
+        Color(0x06000000)
     )
 )
 
@@ -53,10 +53,10 @@ val GlassBorderGradient = Brush.verticalGradient(
 
 val GlassBorderFocusedGradient = Brush.linearGradient(
     colors = listOf(
-        Color(0xFFFFFFFF),
-        Color(0xE6FFFFFF),
-        Color(0x9938BDF8),
-        Color(0xFFFFFFFF)
+        Color(0xE0FFFFFF),
+        Color(0x99FFFFFF),
+        Color(0x8038BDF8),
+        Color(0xB3FFFFFF)
     ),
     start = Offset(0f, 0f),
     end = Offset(400f, 400f)
@@ -64,10 +64,10 @@ val GlassBorderFocusedGradient = Brush.linearGradient(
 
 val GlassSpecularSheen = Brush.verticalGradient(
     colors = listOf(
-        Color(0x55FFFFFF),
-        Color(0x20FFFFFF),
+        Color(0x2EFFFFFF),
+        Color(0x10FFFFFF),
         Color(0x00FFFFFF),
-        Color(0x25000000)
+        Color(0x15000000)
     )
 )
 

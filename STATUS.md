@@ -113,12 +113,26 @@ This document tracks all completed, in-progress, and pending deliverables across
     - Aligned outer content margins to standard `48.dp` title-safe boundaries matching the Home screen for seamless tab transitions.
     - Added pure optical alpha fading edge dissolve (`top = 28.dp, bottom = 48.dp, left = 48.dp, right = 48.dp`) with `48.dp` content padding.
     - Verified smooth vertical dissolve on scroll into atmospheric celestial orbs without dark banding on live TV hardware.
+  - [x] **Gliding Tab Selector & Smooth Parallax Page Transitions:**
+    - Replaced abrupt tab switching with a smooth animated active indicator pill in `TopNavBar.kt` that physically glides horizontally between Home, All Apps, and Settings positions (`animateDpAsState` with `FastOutSlowInEasing`, 240ms).
+    - Integrated smooth directional parallax page transitions in `MainActivity.kt` (`slideInHorizontally` + `fadeIn` and `slideOutHorizontally` + `fadeOut` with 12% subtle horizontal offset), creating a physical, Apple TV-like glide when switching between screens.
+    - Centralized `GlassBackdrop` at root to keep hardware blur and celestial orbs continuously cached on GPU, eliminating frame stutter and backdrop recreation during tab transitions.
+  - [x] **Lighter, Translucent Glass Selector Highlighter:**
+    - Replaced heavy, opaque white focus washes with airy, translucent optical glass fills (`Color(0x28FFFFFF)` down to `0x10FFFFFF`).
+    - Delicate 1.5dp specular edge bevel (`GlassBorderFocusedGradient`) with soft translucent cyan and white radiance, eliminating milky opaque blocks across app tiles, nav tabs, shortcuts, search buttons, and settings rows.
+  - [x] **Compact Rectangular App Cards & Zero Icon Cutoff (`AllAppsScreen.kt`, `AppTile.kt`):**
+    - Transitioned All Apps grid to a crisp, uniform 6-column layout (`TvGridCells.Fixed(6)`).
+    - Configured compact 16:9/16:10 rectangular cards (`132.dp x 78.dp` with `12.dp` rounded corners) across all applications.
+    - Resolved banner and icon clipping: banners now render with `ContentScale.Fit` on dark glass foundations (`#0F172A`) ensuring 100% of logos (Netflix, Google Play Store, Prime Video, Play Games) are fully visible without edge cropping.
+    - Non-banner app icons now center cleanly with 38dp rounded squircle presentation.
+    - 3 complete rows (18 apps) fit effortlessly on screen without vertical crowding or harsh cutoff.
   - [x] **Physical TV Verification:**
     - Verified all 3 screens (`HomeScreen`, `AllAppsScreen`, `SettingsScreen`) live on physical TCL Android 14 TV (`192.168.1.10:5555`).
 
 ---
 
 ### Phase 4: Release Readiness & Optimization
+- [x] Snappy D-pad focus animations across all interactive elements (`tween(110ms)` + `graphicsLayer` eliminating layout passes).
 - [ ] Device compatibility verification (overscan safe margins, 1080p and 4K display densities).
 - [ ] Memory footprint and frame rendering audit (no jank / stable 60fps during D-pad navigation).
 - [ ] Permission and offline privacy audit (verify no background network leaks).

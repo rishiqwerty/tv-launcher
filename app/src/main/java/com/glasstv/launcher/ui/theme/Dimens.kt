@@ -17,6 +17,11 @@ object Dimens {
     val AppTileWidth = 160.dp
     val AppTileHeight = 120.dp
 
+    // Compact rectangular app cards (All Apps)
+    val CompactAppTileWidth = 132.dp
+    val CompactAppTileHeight = 78.dp
+    val CompactCardCornerRadius = 12.dp
+
     // Quick shortcut tiles
     val ShortcutCardWidth = 180.dp
     val ShortcutCardHeight = 72.dp

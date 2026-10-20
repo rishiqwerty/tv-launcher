@@ -36,6 +36,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -66,48 +67,73 @@ fun AppTile(
     onClick: (AppInfo) -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: ((AppInfo) -> Unit)? = null,
-    isReducedMotion: Boolean = false
+    isReducedMotion: Boolean = false,
+    isCompact: Boolean = false
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     val targetScale = when {
         isFocused && isReducedMotion -> Dimens.FocusScaleReduced
-        isFocused -> Dimens.FocusScaleDefault
+        isFocused -> if (isCompact) 1.05f else Dimens.FocusScaleDefault
         else -> 1.0f
     }
 
     val scale by animateFloatAsState(
         targetValue = targetScale,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        animationSpec = androidx.compose.animation.core.tween(
+            durationMillis = 110,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
         label = "tile_scale"
     )
 
-    val shape = RoundedCornerShape(Dimens.CardCornerRadius)
+    val shape = RoundedCornerShape(
+        if (isCompact) Dimens.CompactCardCornerRadius else Dimens.CardCornerRadius
+    )
     val hasBanner = app.banner != null
-    val tileWidth = if (hasBanner) Dimens.BannerCardWidth else Dimens.AppTileWidth
-    val tileHeight = if (hasBanner) Dimens.BannerCardHeight else Dimens.AppTileHeight
+    val tileWidth = if (isCompact) {
+        Dimens.CompactAppTileWidth
+    } else if (hasBanner) {
+        Dimens.BannerCardWidth
+    } else {
+        Dimens.AppTileWidth
+    }
+
+    val tileHeight = if (isCompact) {
+        Dimens.CompactAppTileHeight
+    } else if (hasBanner) {
+        Dimens.BannerCardHeight
+    } else {
+        Dimens.AppTileHeight
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 10.dp)
-            .scale(scale)
+            .padding(
+                horizontal = if (isCompact) 2.dp else 6.dp,
+                vertical = if (isCompact) 4.dp else 8.dp
+            )
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
     ) {
         Box(
             modifier = Modifier
                 .size(width = tileWidth, height = tileHeight)
                 .shadow(
-                    elevation = if (isFocused) 22.dp else 4.dp,
+                    elevation = if (isFocused) 12.dp else 3.dp,
                     shape = shape,
-                    spotColor = if (isFocused) AccentCyan.copy(alpha = 0.85f) else Color(0x60000000)
+                    spotColor = if (isFocused) AccentCyan.copy(alpha = 0.45f) else Color(0x40000000)
                 )
                 .clip(shape)
                 .background(Color(0x350A0E18))
                 .background(if (isFocused) GlassSurfaceFocused else GlassSurfaceCard)
                 .border(
                     border = BorderStroke(
-                        width = if (isFocused) 2.5.dp else 1.dp,
+                        width = if (isFocused) 1.5.dp else 1.dp,
                         brush = if (isFocused) GlassBorderFocusedGradient else GlassBorderGradient
                     ),
                     shape = shape
@@ -133,12 +159,19 @@ fun AppTile(
             if (app.banner != null) {
                 val bitmap = remember(app.banner) { drawableToBitmap(app.banner) }
                 if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = app.label,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0F172A)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = app.label,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             } else if (app.icon != null) {
                 Box(
@@ -147,9 +180,9 @@ fun AppTile(
                         .background(
                             Brush.radialGradient(
                                 colors = if (isFocused) {
-                                    listOf(Color(0x55FFFFFF), Color(0x25334155), Color(0x600F172A))
+                                    listOf(Color(0x35FFFFFF), Color(0x18334155), Color(0x400F172A))
                                 } else {
-                                    listOf(Color(0x28FFFFFF), Color(0x181E293B), Color(0x800F172A))
+                                    listOf(Color(0x18FFFFFF), Color(0x101E293B), Color(0x600F172A))
                                 }
                             )
                         ),
@@ -157,13 +190,15 @@ fun AppTile(
                 ) {
                     val bitmap = remember(app.icon) { drawableToBitmap(app.icon) }
                     if (bitmap != null) {
+                        val iconSize = if (isCompact) 38.dp else 52.dp
+                        val iconShape = RoundedCornerShape(if (isCompact) 8.dp else 12.dp)
                         Image(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = app.label,
                             modifier = Modifier
-                                .size(58.dp)
-                                .shadow(10.dp, RoundedCornerShape(14.dp))
-                                .clip(RoundedCornerShape(14.dp)),
+                                .size(iconSize)
+                                .shadow(4.dp, iconShape)
+                                .clip(iconShape),
                             contentScale = ContentScale.Fit
                         )
                     }
@@ -173,7 +208,7 @@ fun AppTile(
                 Text(
                     text = app.label.take(1).uppercase(),
                     color = TextPrimary,
-                    fontSize = 28.sp,
+                    fontSize = if (isCompact) 20.sp else 28.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -188,18 +223,18 @@ fun AppTile(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(if (isCompact) 5.dp else 8.dp))
 
         // App Label below tile
         Text(
             text = app.label,
             color = if (isFocused) TextPrimary else TextSecondary,
-            fontSize = 13.sp,
+            fontSize = if (isCompact) 11.5.sp else 13.sp,
             fontWeight = if (isFocused) FontWeight.Bold else FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.size(width = tileWidth, height = 20.dp)
+            modifier = Modifier.size(width = tileWidth, height = if (isCompact) 18.dp else 20.dp)
         )
     }
 }
