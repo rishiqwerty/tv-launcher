@@ -99,6 +99,17 @@ This document tracks all completed, in-progress, and pending deliverables across
     - Focus scaling, specular sheen reflections, and instant state toggle feedback.
   - [x] **Frosted Glass Search Pill (`AllAppsScreen.kt`):**
     - 280dp frosted glass capsule with cyan search icon, high-contrast text input, instant clear button, and glowing focus ring.
+  - [x] **Home Page Edge-to-Edge Expansion & Pure Alpha Glass Dissolve (`HomeScreen.kt`, `FadingEdge.kt`):**
+    - Removed muddy manual dark overlay scrims that caused harsh black boxes over edge tiles.
+    - Updated `FadingEdge.kt` with pure `Color.White` alpha masking with `BlendMode.DstIn` to eliminate GPU color tinting.
+    - Full-width `fillMaxWidth()` row containers with `48.dp` title-safe alignment.
+    - Smooth, optical glass dissolution on both left and right edges during horizontal scrolling verified on live TCL TV hardware.
+  - [x] **All Apps Screen Pure Optical Glass Dissolve & Balanced Left Blur (`AllAppsScreen.kt`, `GlassBackdrop.kt`):**
+    - Added center-left Electric Sapphire radial orb (Orb 6) at `Offset(240f, 560f)` with `radius = 850f` in `GlassBackdrop.kt`, eliminating the dark void on the left half of the screen and matching the vibrant right-side atmospheric blur.
+    - Removed manual dark scrim overlays (`#99080C16` and `#CC04060B`) that caused muddy patches over apps.
+    - Aligned outer content margins to standard `48.dp` title-safe boundaries matching the Home screen for seamless tab transitions.
+    - Added pure optical alpha fading edge dissolve (`top = 28.dp, bottom = 48.dp, left = 48.dp, right = 48.dp`) with `48.dp` content padding.
+    - Verified smooth vertical dissolve on scroll into atmospheric celestial orbs without dark banding on live TV hardware.
   - [x] **Physical TV Verification:**
     - Verified all 3 screens (`HomeScreen`, `AllAppsScreen`, `SettingsScreen`) live on physical TCL Android 14 TV (`192.168.1.10:5555`).
 

@@ -147,6 +147,22 @@ fun GlassBackdrop(
                             )
                         )
                 )
+
+                // Orb 6: Luminous Electric Azure/Sapphire bloom in center-left
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    OrbSapphire.copy(alpha = (OrbSapphire.alpha * orbMultiplier * 0.9f).coerceAtMost(1f)),
+                                    Color.Transparent
+                                ),
+                                center = Offset(240f, 560f),
+                                radius = 850f
+                            )
+                        )
+                )
             }
 
             // Top Frosted Glass Horizon Specular Light

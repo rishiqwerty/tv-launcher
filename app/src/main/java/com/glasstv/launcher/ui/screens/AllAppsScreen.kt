@@ -56,6 +56,7 @@ import com.glasstv.launcher.ui.components.AppTile
 import com.glasstv.launcher.ui.components.GlassBackdrop
 import com.glasstv.launcher.ui.components.LauncherScreen
 import com.glasstv.launcher.ui.components.TopNavBar
+import com.glasstv.launcher.ui.components.fadingEdge
 import com.glasstv.launcher.ui.theme.AccentCyan
 import com.glasstv.launcher.ui.theme.Dimens
 import com.glasstv.launcher.ui.theme.GlassBorderFocusedGradient
@@ -104,20 +105,18 @@ fun AllAppsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    horizontal = Dimens.ScreenHorizontalPadding,
-                    vertical = Dimens.ScreenVerticalPadding
-                )
+                .padding(vertical = Dimens.ScreenVerticalPadding)
         ) {
             // Top Navigation Bar
             TopNavBar(
                 currentScreen = LauncherScreen.ALL_APPS,
                 onScreenSelected = onScreenSelected,
                 showClock = uiState.settings.showClock,
-                is24Hour = uiState.settings.clockFormat24Hour
+                is24Hour = uiState.settings.clockFormat24Hour,
+                modifier = Modifier.padding(horizontal = 48.dp)
             )
 
-            Spacer(modifier = Modifier.height(Dimens.SectionSpacing))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Section Header & Search Bar Row
             Row(
@@ -125,7 +124,7 @@ fun AllAppsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp, bottom = 16.dp)
+                    .padding(horizontal = 48.dp, vertical = 6.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -188,12 +187,16 @@ fun AllAppsScreen(
                     )
                 }
             } else {
+                // Expanded Apps Grid with Pure Optical Dissolve Fading Edge
                 TvLazyVerticalGrid(
-                    columns = TvGridCells.Adaptive(minSize = 180.dp),
-                    contentPadding = PaddingValues(bottom = 32.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
+                    columns = TvGridCells.Adaptive(minSize = 164.dp),
+                    contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .fadingEdge(top = 28.dp, bottom = 48.dp, left = 48.dp, right = 48.dp)
                 ) {
                     items(
                         count = filteredApps.size,

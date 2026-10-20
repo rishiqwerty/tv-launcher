@@ -60,6 +60,7 @@ import com.glasstv.launcher.ui.components.GlassBackdrop
 import com.glasstv.launcher.ui.components.LauncherScreen
 import com.glasstv.launcher.ui.components.ShortcutTile
 import com.glasstv.launcher.ui.components.TopNavBar
+import com.glasstv.launcher.ui.components.fadingEdge
 import com.glasstv.launcher.ui.theme.AccentCyan
 import com.glasstv.launcher.ui.theme.AccentPurple
 import com.glasstv.launcher.ui.theme.Dimens
@@ -103,10 +104,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    horizontal = Dimens.ScreenHorizontalPadding,
-                    vertical = Dimens.ScreenVerticalPadding
-                )
+                .padding(vertical = Dimens.ScreenVerticalPadding)
                 .verticalScroll(rememberScrollState())
         ) {
             // 1. Top Navigation Bar: Floating Frosted Capsule & Live Clock
@@ -114,7 +112,8 @@ fun HomeScreen(
                 currentScreen = LauncherScreen.HOME,
                 onScreenSelected = onScreenSelected,
                 showClock = uiState.settings.showClock,
-                is24Hour = uiState.settings.clockFormat24Hour
+                is24Hour = uiState.settings.clockFormat24Hour,
+                modifier = Modifier.padding(horizontal = 48.dp)
             )
 
             Spacer(modifier = Modifier.height(Dimens.SectionSpacing))
@@ -123,7 +122,8 @@ fun HomeScreen(
             SectionHeader(
                 title = "FAVORITES",
                 dotColor = AccentCyan,
-                badgeText = if (uiState.favoriteApps.isNotEmpty()) "${uiState.favoriteApps.size} APPS" else null
+                badgeText = if (uiState.favoriteApps.isNotEmpty()) "${uiState.favoriteApps.size} APPS" else null,
+                modifier = Modifier.padding(start = 48.dp, bottom = 12.dp)
             )
 
             if (uiState.favoriteApps.isEmpty() && !uiState.isLoading) {
@@ -132,7 +132,7 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        .padding(horizontal = 48.dp, vertical = 8.dp)
                         .shadow(12.dp, emptyShape, spotColor = Color(0x50000000))
                         .clip(emptyShape)
                         .background(Color(0x30121927))
@@ -234,7 +234,10 @@ fun HomeScreen(
                 }
             } else {
                 TvLazyRow(
-                    contentPadding = PaddingValues(horizontal = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fadingEdge(left = 48.dp, right = 48.dp),
+                    contentPadding = PaddingValues(start = 48.dp, end = 48.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     itemsIndexed(
@@ -258,11 +261,15 @@ fun HomeScreen(
             SectionHeader(
                 title = "QUICK ACCESS",
                 dotColor = AccentPurple,
-                badgeText = "CONTROLS"
+                badgeText = "CONTROLS",
+                modifier = Modifier.padding(start = 48.dp, bottom = 12.dp)
             )
 
             TvLazyRow(
-                contentPadding = PaddingValues(horizontal = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fadingEdge(left = 48.dp, right = 48.dp),
+                contentPadding = PaddingValues(start = 48.dp, end = 48.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(
@@ -284,11 +291,12 @@ fun HomeScreen(
 private fun SectionHeader(
     title: String,
     dotColor: Color,
-    badgeText: String? = null
+    badgeText: String? = null,
+    modifier: Modifier = Modifier.padding(start = 48.dp, bottom = 12.dp)
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
+        modifier = modifier
     ) {
         // Glowing vertical accent beacon
         Box(
