@@ -97,8 +97,11 @@ This document tracks all completed, in-progress, and pending deliverables across
     - Vivid squircle icon badges for each setting (Palette, Sparkles, Speed, Clock, Visibility, Home, Info).
     - Floating frosted glass status pill on the right showing active states (`[ DARK GLASS ]`, `[ MEDIUM ]`, `[ DYNAMIC ]`, `[ 12-HOUR ]`, `[ OPEN SETUP ]`).
     - Focus scaling, specular sheen reflections, and instant state toggle feedback.
-  - [x] **Frosted Glass Search Pill (`AllAppsScreen.kt`):**
-    - 280dp frosted glass capsule with cyan search icon, high-contrast text input, instant clear button, and glowing focus ring.
+  - [x] **Top Bar On-Demand Search & Minimalist Header Layout (`AllAppsScreen.kt`, `TopNavBar.kt`):**
+    - Removed redundant "ALL APPLICATIONS" section header and badge row, elevating the grid to maximize vertical display room.
+    - Integrated on-demand frosted glass search button (`[ 🔍 ]`) directly into the top bar right action container alongside the clock pill.
+    - Pressing the search button smoothly expands the 300dp frosted search bar with auto-focused text field, real-time app filtering, and clear/close buttons.
+    - Handled Android TV remote `BackHandler` to seamlessly collapse search and restore the full apps grid on Back press without leaving the screen.
   - [x] **Home Page Edge-to-Edge Expansion & Pure Alpha Glass Dissolve (`HomeScreen.kt`, `FadingEdge.kt`):**
     - Removed muddy manual dark overlay scrims that caused harsh black boxes over edge tiles.
     - Updated `FadingEdge.kt` with pure `Color.White` alpha masking with `BlendMode.DstIn` to eliminate GPU color tinting.

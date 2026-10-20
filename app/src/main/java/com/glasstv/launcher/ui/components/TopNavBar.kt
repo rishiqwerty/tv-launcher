@@ -65,6 +65,7 @@ fun TopNavBar(
     onScreenSelected: (LauncherScreen) -> Unit,
     showClock: Boolean = true,
     is24Hour: Boolean = false,
+    searchContent: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -114,9 +115,16 @@ fun TopNavBar(
             }
         }
 
-        // Luxury Floating Frosted Glass Clock Pill
-        if (showClock) {
-            LuxuryGlassClockPill(is24Hour = is24Hour)
+        // Trailing Actions: Optional Search Bar/Button & Glass Clock Pill
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            searchContent?.invoke()
+
+            if (showClock) {
+                LuxuryGlassClockPill(is24Hour = is24Hour)
+            }
         }
     }
 }

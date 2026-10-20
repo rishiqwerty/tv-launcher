@@ -1,5 +1,6 @@
 package com.glasstv.launcher.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
@@ -25,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,14 +79,40 @@ fun AllAppsScreen(
     onScreenSelected: (LauncherScreen) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isSearchExpanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     val firstFocusRequester = remember { FocusRequester() }
+    val searchInputFocusRequester = remember { FocusRequester() }
+    val searchButtonFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(uiState.allApps.size) {
-        if (uiState.allApps.isNotEmpty()) {
+        if (uiState.allApps.isNotEmpty() && !isSearchExpanded) {
             delay(100)
             try {
                 firstFocusRequester.requestFocus()
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    LaunchedEffect(isSearchExpanded) {
+        if (isSearchExpanded) {
+            delay(80)
+            try {
+                searchInputFocusRequester.requestFocus()
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    // Remote Back button dismisses search if expanded
+    BackHandler(enabled = isSearchExpanded) {
+        if (searchQuery.isNotEmpty()) {
+            searchQuery = ""
+        } else {
+            isSearchExpanded = false
+            try {
+                searchButtonFocusRequester.requestFocus()
             } catch (e: Exception) {
             }
         }
@@ -107,84 +135,99 @@ fun AllAppsScreen(
                 .fillMaxSize()
                 .padding(vertical = Dimens.ScreenVerticalPadding)
         ) {
-            // Top Navigation Bar
+            // Top Navigation Bar with Interactive Search Action
             TopNavBar(
                 currentScreen = LauncherScreen.ALL_APPS,
                 onScreenSelected = onScreenSelected,
                 showClock = uiState.settings.showClock,
                 is24Hour = uiState.settings.clockFormat24Hour,
+                searchContent = {
+                    if (isSearchExpanded) {
+                        TopSearchBarExpanded(
+                            query = searchQuery,
+                            onQueryChange = { searchQuery = it },
+                            onClose = {
+                                isSearchExpanded = false
+                                searchQuery = ""
+                                try {
+                                    searchButtonFocusRequester.requestFocus()
+                                } catch (e: Exception) {
+                                }
+                            },
+                            focusRequester = searchInputFocusRequester
+                        )
+                    } else {
+                        TopSearchActionButton(
+                            onClick = { isSearchExpanded = true },
+                            modifier = Modifier.focusRequester(searchButtonFocusRequester)
+                        )
+                    }
+                },
                 modifier = Modifier.padding(horizontal = 48.dp)
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Section Header & Search Bar Row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 48.dp, vertical = 6.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(width = 4.dp, height = 15.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(AccentCyan)
-                            .shadow(6.dp, RoundedCornerShape(2.dp), spotColor = AccentCyan)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "ALL APPLICATIONS",
-                        color = TextPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    val badgeShape = RoundedCornerShape(8.dp)
-                    Box(
-                        modifier = Modifier
-                            .clip(badgeShape)
-                            .background(Color(0x25FFFFFF))
-                            .border(BorderStroke(1.dp, Color(0x35FFFFFF)), badgeShape)
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = if (searchQuery.isBlank()) "${uiState.allApps.size} APPS" else "${filteredApps.size} OF ${uiState.allApps.size}",
-                            color = AccentCyan,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-                }
-
-                // Remote-friendly Frosted Glass Search Bar Pill
-                AppSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    onClear = { searchQuery = "" }
-                )
-            }
+            Spacer(modifier = Modifier.height(14.dp))
 
             if (filteredApps.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = if (uiState.isLoading) {
-                            "Loading applications..."
-                        } else if (searchQuery.isNotBlank()) {
-                            "No applications matching \"$searchQuery\""
-                        } else {
-                            "No applications found"
-                        },
-                        color = TextMuted,
-                        fontSize = 14.sp
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = if (uiState.isLoading) {
+                                "Loading applications..."
+                            } else if (searchQuery.isNotBlank()) {
+                                "No applications matching \"$searchQuery\""
+                            } else {
+                                "No applications found"
+                            },
+                            color = TextMuted,
+                            fontSize = 14.sp
+                        )
+
+                        if (searchQuery.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            var isClearFocused by remember { mutableStateOf(false) }
+                            val clearInteraction = remember { MutableInteractionSource() }
+                            val clearShape = RoundedCornerShape(14.dp)
+                            Box(
+                                modifier = Modifier
+                                    .clip(clearShape)
+                                    .background(if (isClearFocused) GlassCardFocusedGradient else GlassCardFillGradient)
+                                    .border(
+                                        BorderStroke(
+                                            width = if (isClearFocused) 2.dp else 1.dp,
+                                            brush = if (isClearFocused) GlassBorderFocusedGradient else GlassBorderGradient
+                                        ),
+                                        clearShape
+                                    )
+                                    .onFocusChanged { isClearFocused = it.isFocused }
+                                    .focusable(interactionSource = clearInteraction)
+                                    .clickable(
+                                        interactionSource = clearInteraction,
+                                        indication = null,
+                                        onClick = {
+                                            searchQuery = ""
+                                            isSearchExpanded = false
+                                        }
+                                    )
+                                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = "Clear Search",
+                                    color = if (isClearFocused) TextPrimary else AccentCyan,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             } else {
                 // Expanded Apps Grid with Pure Optical Dissolve Fading Edge
@@ -208,7 +251,7 @@ fun AllAppsScreen(
                             onClick = onAppClick,
                             onLongClick = onAppLongClick,
                             isReducedMotion = uiState.settings.reducedMotion,
-                            modifier = if (index == 0) Modifier.focusRequester(firstFocusRequester) else Modifier
+                            modifier = if (index == 0 && !isSearchExpanded) Modifier.focusRequester(firstFocusRequester) else Modifier
                         )
                     }
                 }
@@ -218,25 +261,23 @@ fun AllAppsScreen(
 }
 
 @Composable
-private fun AppSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onClear: () -> Unit
+private fun TopSearchActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.05f else 1.0f,
+        targetValue = if (isFocused) 1.08f else 1.0f,
         animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
-        label = "search_scale"
+        label = "search_btn_scale"
     )
 
     val shape = RoundedCornerShape(22.dp)
 
     Box(
-        modifier = Modifier
-            .width(280.dp)
+        modifier = modifier
             .scale(scale)
             .shadow(
                 elevation = if (isFocused) 14.dp else 4.dp,
@@ -244,18 +285,17 @@ private fun AppSearchBar(
                 spotColor = if (isFocused) AccentCyan else Color(0x60000000)
             )
             .clip(shape)
-            .background(Color(0x350F172A))
+            .background(Color(0x400F172A))
             .background(
                 Brush.verticalGradient(
                     colors = if (isFocused) {
                         listOf(
-                            Color(0x65FFFFFF),
-                            Color(0x30FFFFFF),
-                            Color(0x10000000)
+                            Color(0x75FFFFFF),
+                            Color(0x35FFFFFF)
                         )
                     } else {
                         listOf(
-                            Color(0x30FFFFFF),
+                            Color(0x35FFFFFF),
                             Color(0x12FFFFFF),
                             Color(0x04000000)
                         )
@@ -270,7 +310,66 @@ private fun AppSearchBar(
                 shape = shape
             )
             .onFocusChanged { isFocused = it.isFocused }
-            .padding(horizontal = 16.dp, vertical = 9.dp),
+            .focusable(interactionSource = interactionSource)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .padding(horizontal = 14.dp, vertical = 9.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = "Search",
+            tint = if (isFocused) TextPrimary else AccentCyan,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
+private fun TopSearchBarExpanded(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClose: () -> Unit,
+    focusRequester: FocusRequester,
+    modifier: Modifier = Modifier
+) {
+    var isInputFocused by remember { mutableStateOf(false) }
+    var isCloseFocused by remember { mutableStateOf(false) }
+    val inputInteraction = remember { MutableInteractionSource() }
+    val closeInteraction = remember { MutableInteractionSource() }
+
+    val shape = RoundedCornerShape(22.dp)
+
+    Box(
+        modifier = modifier
+            .width(300.dp)
+            .shadow(
+                elevation = 14.dp,
+                shape = shape,
+                spotColor = AccentCyan
+            )
+            .clip(shape)
+            .background(Color(0x500F172A))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0x55FFFFFF),
+                        Color(0x20FFFFFF),
+                        Color(0x06000000)
+                    )
+                )
+            )
+            .border(
+                border = BorderStroke(
+                    width = if (isInputFocused) 2.dp else 1.dp,
+                    brush = if (isInputFocused) GlassBorderFocusedGradient else GlassBorderGradient
+                ),
+                shape = shape
+            )
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -280,11 +379,11 @@ private fun AppSearchBar(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search",
-                tint = if (isFocused) AccentCyan else TextSecondary,
+                tint = AccentCyan,
                 modifier = Modifier.size(17.dp)
             )
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             BasicTextField(
                 value = query,
@@ -296,9 +395,11 @@ private fun AppSearchBar(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 ),
+                interactionSource = inputInteraction,
                 modifier = Modifier
                     .weight(1f)
-                    .focusable(interactionSource = interactionSource),
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { isInputFocused = it.isFocused },
                 decorationBox = { innerTextField ->
                     if (query.isEmpty()) {
                         Text(
@@ -311,15 +412,36 @@ private fun AppSearchBar(
                 }
             )
 
-            if (query.isNotEmpty()) {
-                Spacer(modifier = Modifier.width(6.dp))
+            val hasQuery = query.isNotEmpty()
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(if (isCloseFocused) Color(0x40FFFFFF) else Color.Transparent)
+                    .border(
+                        border = if (isCloseFocused) BorderStroke(1.dp, Color.White) else BorderStroke(0.dp, Color.Transparent),
+                        shape = CircleShape
+                    )
+                    .onFocusChanged { isCloseFocused = it.isFocused }
+                    .focusable(interactionSource = closeInteraction)
+                    .clickable(
+                        interactionSource = closeInteraction,
+                        indication = null,
+                        onClick = {
+                            if (hasQuery) {
+                                onQueryChange("")
+                            } else {
+                                onClose()
+                            }
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Clear",
-                    tint = TextSecondary,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable { onClear() }
+                    imageVector = if (hasQuery) Icons.Default.Clear else Icons.Default.Close,
+                    contentDescription = if (hasQuery) "Clear search" else "Close search",
+                    tint = if (isCloseFocused) TextPrimary else TextSecondary,
+                    modifier = Modifier.size(15.dp)
                 )
             }
         }
